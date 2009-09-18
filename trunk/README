@@ -1,0 +1,17 @@
+
+Requirements:
+  - hadoop-0.20.0 (libhdfs.so, hadoop-x.x.x-core.jar, commons-logging-x.x.x.jar)
+     http://hadoop.apache.org/hdfs/
+    
+  - sun-java6-jdk  (libjvm.so)
+     # apt-get install sun-java6-jdk
+
+ The files used by libpyhdfs can be found at:
+  - libjvm.so (/usr/lib/jvm/java-6-sun/jre/lib/i386/server/libjvm.so)
+  - libhdfs.so (symbolic link to `libhdfs.so.0')
+  - libhdfs.so.0 ($HADOOPHOME/c++/[Linux-i386-32 | Linux-amd64-64]/lib)
+  - commons-logging-x.x.x.jar ($HADOOPHOME)
+  - hadoop-x.x.x-core.jar ($HADOOPHOME)
+
+Setting CLASSPATH:
+ $ export CLASSPATH=/path/to/hadoop-x.x.x-core.jar:/path/to/commons-loggin-x.x.x.jar
