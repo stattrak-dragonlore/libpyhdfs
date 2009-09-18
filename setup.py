@@ -9,6 +9,6 @@ module1 = Extension('pyhdfs',
 
 setup (name = 'PyHdfs',
        version = '0.1',
-       author = 'Deng Zhiping'
-       author_email = 'kofreestyler@gmail.com'
+       author = 'Deng Zhiping',
+       author_email = 'kofreestyler@gmail.com',
        ext_modules = [module1])
