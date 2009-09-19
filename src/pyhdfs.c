@@ -102,6 +102,7 @@ hdfs_open(PyObject *self, PyObject *args)
 }
 
 
+/* no good idea to implement read, how to free the read buffer */
 static PyObject *
 hdfs_read(PyObject *self, PyObject *args);
 
@@ -135,6 +136,7 @@ hdfs_write(PyObject *self, PyObject *args)
 	/* hdfsFlush(fs, file); */
 	
 	if (written == -1) {
+		PyErr_SetString(PyExc_IOError, "Failed to write data to file");
 		return NULL;
 	} else {
 		return Py_BuildValue("i", written);
@@ -160,6 +162,7 @@ hdfs_close(PyObject *self, PyObject *args)
 		Py_INCREF(Py_None);
 		return Py_None;
 	} else {
+		PyErr_SetString(PyExc_IOError, "Failed to close file");
 		return NULL;
 	}
 }
@@ -184,6 +187,75 @@ hdfs_disconnect(PyObject *self, PyObject *args)
 		Py_INCREF(Py_None);
 		return Py_None;
 	} else {
+		PyErr_SetString(PyExc_SystemError, "Failed to disconncect from hdfs");
+		return NULL;
+	}
+}
+
+
+/**
+ * Copy file from hdfs to local.
+ * @param fs The handle to hdfs.
+ * @param rpath The path of hdfs file. 
+ * @param lpath The path of local file. 
+ * @return Returns None on success, NULL on error. 
+ */
+static PyObject *
+hdfs_get(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs, lfs;
+	const char *rpath, *lpath;
+	
+	if (!PyArg_ParseTuple(args, "Oss", &pyfs, &rpath, &lpath))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	lfs = hdfsConnect(NULL, 0);	/* connect to local fs */
+	
+	if (!lfs) {
+		return NULL;
+	}
+	
+	if (hdfsCopy(fs, rpath, lfs, lpath) != -1) {
+		Py_INCREF(Py_None);
+		return Py_None;
+	} else {
+		PyErr_SetString(PyExc_IOError, "Failed to get file");
+		return NULL;
+	}
+}
+
+
+/**
+ * Copy file from local to hdfs.
+ * @param fs The handle to hdfs.
+ * @param lpath The path of local file. 
+ * @param rpath The path of hdfs file. 
+ * @return Returns None on success, NULL on error. 
+ */
+static PyObject *
+hdfs_put(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs, lfs;
+	const char *lpath, *rpath;
+	
+	if (!PyArg_ParseTuple(args, "Oss", &pyfs, &lpath, &rpath))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	lfs = hdfsConnect(NULL, 0);	/* connect to local fs */
+	
+	if (!lfs) {
+		return NULL;
+	}
+	
+	if (hdfsCopy(lfs, lpath, fs, rpath) != -1) {
+		Py_INCREF(Py_None);
+		return Py_None;
+	} else {
+		PyErr_SetString(PyExc_IOError, "Failed to put file");
 		return NULL;
 	}
 }
@@ -229,6 +301,8 @@ static PyMethodDef HdfsMethods[] =
 	{"close", hdfs_close, METH_VARARGS, "Close a hdfs file"},
 	{"disconnect", hdfs_disconnect, METH_VARARGS, "Disconnect from hdfs file system"},
 	{"test", hdfs_test, METH_VARARGS, "Run connect, open, read, write, close, disconnect in one time"},
+	{"get", hdfs_get, METH_VARARGS, "Copy a file from hdfs to local"},
+	{"put", hdfs_put, METH_VARARGS, "Copy a file from local to hdfs"},
 	{NULL, NULL, 0, NULL}
 };
 
