@@ -17,7 +17,6 @@
  */
 
 #include <Python.h>
-#include <stdio.h>
 #include "hdfs.h"
 
 
@@ -102,11 +101,6 @@ hdfs_open(PyObject *self, PyObject *args)
 }
 
 
-/* no good idea to implement read, how to free the read buffer */
-static PyObject *
-hdfs_read(PyObject *self, PyObject *args);
-
-
 /**
  * Write data into an open file.
  * @param fs The configured filesystem handle.
@@ -132,14 +126,35 @@ hdfs_write(PyObject *self, PyObject *args)
 	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
 	
 	size_t written = hdfsWrite(fs, file, (void *)buf, siz);
-	/* need flush? */
-	/* hdfsFlush(fs, file); */
 	
 	if (written == -1) {
 		PyErr_SetString(PyExc_IOError, "Failed to write data to file");
 		return NULL;
 	} else {
 		return Py_BuildValue("i", written);
+	}
+}
+
+
+static PyObject *
+hdfs_flush(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	PyObject *pyfile;
+	hdfsFS fs;
+	hdfsFile file;
+	
+	if (!PyArg_ParseTuple(args, "OO", &pyfs, &pyfile))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
+	
+	if (hdfsFlush(fs, file) != -1) {
+		Py_RETURN_NONE;
+	} else {
+		PyErr_SetString(PyExc_IOError, "Failed to close file");
+		return NULL;
 	}
 }
 
@@ -159,8 +174,7 @@ hdfs_close(PyObject *self, PyObject *args)
 	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
 	
 	if (hdfsCloseFile(fs, file) != -1) {
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	} else {
 		PyErr_SetString(PyExc_IOError, "Failed to close file");
 		return NULL;
@@ -184,8 +198,7 @@ hdfs_disconnect(PyObject *self, PyObject *args)
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
 	if (hdfsDisconnect(fs) != -1) {
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	} else {
 		PyErr_SetString(PyExc_SystemError, "Failed to disconncect from hdfs");
 		return NULL;
@@ -218,8 +231,7 @@ hdfs_get(PyObject *self, PyObject *args)
 	}
 	
 	if (hdfsCopy(fs, rpath, lfs, lpath) != -1) {
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	} else {
 		PyErr_SetString(PyExc_IOError, "Failed to get file");
 		return NULL;
@@ -252,8 +264,7 @@ hdfs_put(PyObject *self, PyObject *args)
 	}
 	
 	if (hdfsCopy(lfs, lpath, fs, rpath) != -1) {
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	} else {
 		PyErr_SetString(PyExc_IOError, "Failed to put file");
 		return NULL;
@@ -261,48 +272,43 @@ hdfs_put(PyObject *self, PyObject *args)
 }
 
 
+/**
+ * Checks if a given path exsits on the hdfs.
+ * @param fs The configured filesystem handle.
+ * @param path The path to look for
+ * @return Returns True on success, False else.
+ * int hdfsExists(hdfsFS fs, const char *path);
+ */
 static PyObject *
-hdfs_test(PyObject *self, PyObject *args)
+hdfs_exists(PyObject *self, PyObject *args)
 {
-	const char *host;
-	int port;
+	PyObject *pyfs;
+	hdfsFS fs;
+	const char *path;
 	
-	if (!PyArg_ParseTuple(args, "si", &host, &port))
+	if (!PyArg_ParseTuple(args, "Os", &pyfs, &path))
 		return NULL;
 	
-	hdfsFS fs = hdfsConnect(host, port);
-	if(!fs) {
-		char msg[128];
-		snprintf(msg, sizeof(msg), "Failed to conncect to %s:%d", host, port);
-		PyErr_SetString(PyExc_SystemError, msg);
-		return NULL;
-	} 	
-	hdfsFile file = hdfsOpenFile(fs, "/test/shit", O_WRONLY, 0, 2, 0);
-	if(!file) {
-		PyErr_SetString(PyExc_IOError, "Failed to open file");
-		return NULL;
-        }
-	
-	char* buffer = "holyyyyyyy shit!!!!!!!!!!!";
-        hdfsWrite(fs, file, (void*)buffer, strlen(buffer)+1);
-	hdfsCloseFile(fs, file);
-	hdfsDisconnect(fs);
-	Py_INCREF(Py_None);
-	return Py_None;
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	if (hdfsExists(fs, path) == 0) 
+		Py_RETURN_TRUE;
+	else
+		Py_RETURN_FALSE;
 }
 
 
 static PyMethodDef HdfsMethods[] =
 {
-	{"connect", hdfs_connect, METH_VARARGS, "Connect to a hdfs file system"},
-	{"open", hdfs_open, METH_VARARGS, "Open a hdfs file in given mode"},
-//	{"read", hdfs_read, METH_VARARGS, "Read data from an open file"},
-	{"write", hdfs_write, METH_VARARGS, "Write data into an open file"},
-	{"close", hdfs_close, METH_VARARGS, "Close a hdfs file"},
-	{"disconnect", hdfs_disconnect, METH_VARARGS, "Disconnect from hdfs file system"},
-	{"test", hdfs_test, METH_VARARGS, "Run connect, open, read, write, close, disconnect in one time"},
-	{"get", hdfs_get, METH_VARARGS, "Copy a file from hdfs to local"},
-	{"put", hdfs_put, METH_VARARGS, "Copy a file from local to hdfs"},
+	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
+	{"open", hdfs_open, METH_VARARGS, "open(fs, path, mode) -> hdfs-file \n\nOpen a hdfs file in given mode (\"r\" or \"w\")"},
+	{"write", hdfs_write, METH_VARARGS, "write(fs, hdfsfile, str) -> byteswritten \n\nWrite data into an open file"},
+	{"flush", hdfs_flush, METH_VARARGS, "flush(fs, hdfsfile) -> None \n\nFlush the data"},
+	{"close", hdfs_close, METH_VARARGS, "close(fs, hdfsfile) -> None \n\nClose a hdfs file"},
+	{"disconnect", hdfs_disconnect, METH_VARARGS, "disconnect(fs) -> None \n\nDisconnect from hdfs file system"},
+//	{"test", hdfs_test, METH_VARARGS, "Run connect, open, read, write, close, disconnect in one time"},
+	{"get", hdfs_get, METH_VARARGS, "get(fs, rpath, lpath) -> None \n\nCopy a file from hdfs to local"},
+	{"put", hdfs_put, METH_VARARGS, "put(fs, lpath, rpath) -> None \n\nCopy a file from local to hdfs"},
+	{"exists", hdfs_exists, METH_VARARGS, "exists(fs, path) -> True or False \n\nChecks if a given path exsits on the hdfs"},
 	{NULL, NULL, 0, NULL}
 };
 
