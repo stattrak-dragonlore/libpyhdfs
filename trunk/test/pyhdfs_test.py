@@ -1,35 +1,36 @@
 #!/usr/bin/env python
 import pyhdfs
 
-host = "192.168.1.1"
+host = "192.168.23.204"
 port = 9000
 
 def main():
     print "connecting"
     fs = pyhdfs.connect(host, port)
     
-    print "opening"
-    f = pyhdfs.open(fs, "/test/pyhdfs3", "w")
+    try:
+        print "opening"
+        f = pyhdfs.open(fs, "/test/foo", "w")
     
-    print "writing"
-    pyhdfs.write(fs, f, "hoho\0haha\nxixi")
+        print "writing"
+        pyhdfs.write(fs, f, "hoho\0haha\nxixi")
     
-    print "flushing"
-    pyhdfs.flush(fs, f)
+        print "flushing"
+        pyhdfs.flush(fs, f)
     
-    print "closing"
-    pyhdfs.close(fs, f)
+        print "closing"
+        pyhdfs.close(fs, f)
     
-    print "checking existence"
-    if pyhdfs.exists(fs, "/test/hadoop-0.20.1.tar.gz"):
-        print "getting"
-        pyhdfs.get(fs, "/test/hadoop-0.20.1.tar.gz", "/tmp/hadoop.tgz")
-    
-    print "putting"
-    pyhdfs.put(fs, "pyhdfs.so", "/test")
-    
-    print "disconnecting"
-    pyhdfs.disconnect(fs)
+        print "checking existence"
+        if pyhdfs.exists(fs, "/test/foo"):
+            print "getting"
+            pyhdfs.get(fs, "/test/foo", "/tmp/foo.txt")
+	    
+	print "putting"
+	pyhdfs.put(fs, "pyhdfs_test.py", "/test")
+    finally:
+        print "disconnecting"
+        pyhdfs.disconnect(fs)
     
 if __name__ == "__main__":
     main()
