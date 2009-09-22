@@ -1,6 +1,6 @@
 
 Requirements:
-  - hadoop-0.20.0 (libhdfs.so, hadoop-x.x.x-core.jar, commons-logging-x.x.x.jar)
+  - hadoop-0.20.1 (libhdfs.so, hadoop-0.20.1-core.jar, commons-logging-1.0.4.jar)
      http://hadoop.apache.org/hdfs/
     
   - sun-java6-jdk  (libjvm.so)

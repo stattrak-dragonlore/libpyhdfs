@@ -14,8 +14,19 @@ def main():
     print "writing"
     pyhdfs.write(fs, f, "hoho\0haha\nxixi")
     
+    print "flushing"
+    pyhdfs.flush(fs, f)
+    
     print "closing"
     pyhdfs.close(fs, f)
+    
+    print "checking existence"
+    if pyhdfs.exists(fs, "/test/hadoop-0.20.1.tar.gz"):
+        print "getting"
+        pyhdfs.get(fs, "/test/hadoop-0.20.1.tar.gz", "/tmp/hadoop.tgz")
+    
+    print "putting"
+    pyhdfs.put(fs, "pyhdfs.so", "/test")
     
     print "disconnecting"
     pyhdfs.disconnect(fs)
