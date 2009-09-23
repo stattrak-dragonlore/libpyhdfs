@@ -14,7 +14,6 @@
  
 ** install libpyhdfs 
   $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs
-  $ mkdir libpyhdfs/lib
   $ cd hadoop-0.20.1
   $ cp c++/Linux-i386-32/liblibhdfs.so.0 hadoop-0.20.1-core.jar commons-logging-1.0.4.jar ../libpyhdfs/lib
   $ cd ../libpyhdfs
