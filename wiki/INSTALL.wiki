@@ -17,7 +17,7 @@
   
   $ cd ..
 
-  $ sudo python setup install --prefix=/usr/local
+  $ sudo python setup.py install --prefix=/usr/local
 
 
 ==Setting CLASSPATH==
