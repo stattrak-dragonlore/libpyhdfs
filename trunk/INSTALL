@@ -17,7 +17,7 @@
   $ ln -s libhdfs.so.0 libhdfs.so
   
   $ cd ..
-  # python setup.py install --prefix=/usr/local
+  # python setup.py install
 
   If you see the following error:
 /usr/lib/jvm/java-6-sun/include/jni.h:27:20: error: jni_md.h: No such file or directory
