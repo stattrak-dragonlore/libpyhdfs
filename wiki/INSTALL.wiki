@@ -1,24 +1,22 @@
 ==install Java SDK 6==
    $ sudo apt-get install sun-java6-jdk
    
-   
-==get hadoop-0.20.1==
- $ wget http://labs.xiaonei.com/apache-mirror/hadoop/core/hadoop-0.20.1/hadoop-0.20.1.tar.gz
-
- $ tar xzf hadoop-0.20.1.tar.gz
- 
  
 ==install libpyhdfs==
   $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs
 
-  $ cd hadoop-0.20.1
+  $ cd libpyhdfs/lib
 
-  $ cp c++/Linux-i386-32/liblibhdfs.so.0 hadoop-0.20.1-core.jar commons-logging-1.0.4.jar ../libpyhdfs/lib
+  $ wget http://libpyhdfs.googlecode.com/files/commons-logging-1.0.4.jar
 
-  $ cd ../libpyhdfs
+  $ wget http://libpyhdfs.googlecode.com/files/hadoop-0.20.1-core.jar
 
-  $ ln -s libhdfs.so.0 lib/libhdfs.so
+  $ wget http://libpyhdfs.googlecode.com/files/libhdfs.so.0
+
+  $ ln -s libhdfs.so.0 libhdfs.so
   
+  $ cd ..
+
   $ sudo python setup install --prefix=/usr/local
 
 
