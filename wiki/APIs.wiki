@@ -1,44 +1,53 @@
 disconnect(fs) -> None                             
 
 Disconnect from hdfs file system
-----                            
+
+----
 
 exists(fs, path) -> True or False 
 
 Checks if a given path exsits on the hdfs
-----                                     
+
+----
 
 get(fs, rpath, lpath) -> None 
 
 Copy a file from hdfs to local
+
 ----
 
 write(fs, hdfsfile, str) -> byteswritten
 
 Write data into an open file
+
 ----
 
 put(fs, lpath, rpath) -> None
 
 Copy a file from local to hdfs
+
 ----
 
 connect(host, port) -> fs
 
 Connect to a hdfs file system
+
 ----
 
 flush(fs, hdfsfile) -> None
 
 Flush the data
+
 ----
 
 close(fs, hdfsfile) -> None
 
 Close a hdfs file
+
 ----
 
 open(fs, path, mode) -> hdfs-file
 
 Open a hdfs file in given mode ("r" or "w")
+
 ----
