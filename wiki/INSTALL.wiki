@@ -25,11 +25,16 @@
    $ export CLASSPATH=/usr/local/lib/pyhdfs/hadoop-0.20.1-core.jar:/usr/local/lib/pyhdfs/commons-logging-1.0.4.jar:/etc/pyhdfs
 
 
+
+-----
+
+You can run install.sh to do all the things above.
+
+
 ==Run test script==
    $ cd test
 
    $ python pyhdfs_test.py
-
 
 
 ----
