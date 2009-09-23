@@ -5,7 +5,7 @@ pyhdfs = Extension('pyhdfs',
                    include_dirs = ['/usr/lib/jvm/java-6-sun/include/'],
                    libraries = ['hdfs'],
                    library_dirs = ['lib'],
-                   runtime_library_dirs = ['/usr/local/lib', '/usr/lib/jvm/java-6-sun/jre/lib/i386/server'],
+                   runtime_library_dirs = ['/usr/local/lib/pyhdfs', '/usr/lib/jvm/java-6-sun/jre/lib/i386/server'],
                    )
 
 files = [('lib/pyhdfs', ['lib/hadoop-0.20.1-core.jar', 'lib/commons-logging-1.0.4.jar',
