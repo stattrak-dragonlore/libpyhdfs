@@ -1,8 +1,8 @@
-
 disconnect(fs) -> None                             
 
 Disconnect from hdfs file system
-----                            
+----               
+             
 exists(fs, path) -> True or False 
 
 Checks if a given path exsits on the hdfs
