@@ -32,4 +32,16 @@
    $ cd test
 
    $ python pyhdfs_test.py
+
+
+
+  If you see the following error:
+/usr/lib/jvm/java-6-sun/include/jni.h:27:20: error: jni_md.h: No such file or directory
+
+Edit /usr/lib/jvm/java-6-sun/include/jni.h
+change  - 27 #include "jni_md.h"
+into    + 27 #include "linux/jni_md.h"
+
+ses https://bugs.launchpad.net/ubuntu/+source/sun-java6/+bug/390290
+Debian has the same problem.
    
