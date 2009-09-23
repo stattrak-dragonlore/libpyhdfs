@@ -8,18 +8,15 @@
    # apt-get install sun-java6-jdk
    
    
-** get hadoop-0.20.1
- $ wget http://labs.xiaonei.com/apache-mirror/hadoop/core/hadoop-0.20.1/hadoop-0.20.1.tar.gz
- $ tar xzf hadoop-0.20.1.tar.gz
- 
- 
 ** install libpyhdfs 
   $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs
-  $ cd hadoop-0.20.1
-  $ cp c++/Linux-i386-32/lib/libhdfs.so.0 hadoop-0.20.1-core.jar lib/commons-logging-1.0.4.jar ../libpyhdfs/lib
-  $ cd ../libpyhdfs
-  $ ln -s libhdfs.so.0 lib/libhdfs.so
+  $ cd libpyhdfs/lib
+  $ wget http://libpyhdfs.googlecode.com/files/commons-logging-1.0.4.jar
+  $ wget http://libpyhdfs.googlecode.com/files/hadoop-0.20.1-core.jar
+  $ wget http://libpyhdfs.googlecode.com/files/libhdfs.so.0
+  $ ln -s libhdfs.so.0 libhdfs.so
   
+  $ cd ..
   # python setup.py install --prefix=/usr/local
 
   If you see the following error:
