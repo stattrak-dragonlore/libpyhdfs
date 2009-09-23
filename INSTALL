@@ -19,7 +19,7 @@
   $ cd ../libpyhdfs
   $ ln -s libhdfs.so.0 lib/libhdfs.so
   
-  # python setup install --prefix=/usr/local
+  # python setup.py install --prefix=/usr/local
 
 
 ** Setting CLASSPATH:
