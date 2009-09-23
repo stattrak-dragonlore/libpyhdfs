@@ -21,5 +21,5 @@ setup (name = 'PyHdfs',
        url = "http://code.google.com/p/libpyhdfs",
        license = "Apache License 2.0", 
        platforms = ["GNU/Linux"],
-       data_files = library_files,
+       data_files = files,
        ext_modules = [pyhdfs])
