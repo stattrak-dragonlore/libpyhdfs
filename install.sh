@@ -12,7 +12,7 @@ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs
 
 #prepare library files
 cd hadoop-0.20.1
-cp c++/Linux-i386-32/lib/liblibhdfs.so.0 hadoop-0.20.1-core.jar lib/commons-logging-1.0.4.jar ../libpyhdfs/lib
+cp c++/Linux-i386-32/lib/libhdfs.so.0 hadoop-0.20.1-core.jar lib/commons-logging-1.0.4.jar ../libpyhdfs/lib
 cd ../libpyhdfs
 ln -s libhdfs.so.0 lib/libhdfs.so
   
