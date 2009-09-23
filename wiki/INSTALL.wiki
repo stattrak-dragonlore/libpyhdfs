@@ -11,8 +11,6 @@
 ==install libpyhdfs==
   $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs
 
-  $ mkdir libpyhdfs/lib
-
   $ cd hadoop-0.20.1
 
   $ cp c++/Linux-i386-32/liblibhdfs.so.0 hadoop-0.20.1-core.jar commons-logging-1.0.4.jar ../libpyhdfs/lib
@@ -25,9 +23,9 @@
 
 
 ==Setting CLASSPATH==
-   $ export LD_LIBRARY_PATH=/usr/local/lib/pyhdfs
+   $ export LD_LIBRARY_PATH=/usr/local/lib/pyhdfs:/usr/lib/jvm/java-6-sun/jre/lib/i386/server
 
-   $ export CLASSPATH=/usr/local/lib/pyhdfs/hadoop-0.20.1-core.jar:/usr/loca/lib/pyhdfs/commons-logging-1.0.4.jar
+   $ export CLASSPATH=/usr/local/lib/pyhdfs/hadoop-0.20.1-core.jar:/usr/loca/lib/pyhdfs/commons-logging-1.0.4.jar:/etc/pyhdfs
 
 
 ==Run test script==
