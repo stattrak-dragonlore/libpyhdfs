@@ -1,23 +1,23 @@
 ==install Java SDK 6==
-   $ sudo apt-get install sun-java6-jdk
+   $ `sudo apt-get install sun-java6-jdk`
    
  
 ==install libpyhdfs==
-  $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs
+  $ `svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs`
 
-  $ cd libpyhdfs/lib
+  $ `cd libpyhdfs/lib`
 
-  $ wget http://libpyhdfs.googlecode.com/files/commons-logging-1.0.4.jar
+  $ `wget http://libpyhdfs.googlecode.com/files/commons-logging-1.0.4.jar`
 
-  $ wget http://libpyhdfs.googlecode.com/files/hadoop-0.20.1-core.jar
+  $ `wget http://libpyhdfs.googlecode.com/files/hadoop-0.20.1-core.jar`
 
-  $ wget http://libpyhdfs.googlecode.com/files/libhdfs.so.0
+  $ `wget http://libpyhdfs.googlecode.com/files/libhdfs.so.0`
 
-  $ ln -s libhdfs.so.0 libhdfs.so
+  $ `ln -s libhdfs.so.0 libhdfs.so`
   
-  $ cd ..
+  $ `cd ..`
 
-  $ sudo python setup.py install --prefix="/usr/local"
+  $ `sudo python setup.py install --prefix="/usr/local"`
 
 
 -----
@@ -26,9 +26,9 @@ You can run `install.sh' to do all the things above.
 
 
 ==Run test script==
-   $ cd test
+   $ `cd test`
 
-   $ python pyhdfs_test.py
+   $ `python pyhdfs_test.py`
 
 
 ----
@@ -39,9 +39,9 @@ If you see the following error:
 
 Edit /usr/lib/jvm/java-6-sun/include/jni.h
 
-change  - 27 #include "jni_md.h"
+change  - 27 *#include "jni_md.h"*
 
-into    + 27 #include "linux/jni_md.h"
+into    + 27 *#include "linux/jni_md.h"*
 
 see https://bugs.launchpad.net/ubuntu/+source/sun-java6/+bug/390290
 
