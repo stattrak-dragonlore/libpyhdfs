@@ -1,4 +1,11 @@
-disconnect(fs) -> None                             
+
+rename(fs, oldpath, newpath) -> None                                                                                                                                  
+
+Rename a file (direcory)
+
+----
+
+disconnect(fs) -> None 
 
 Disconnect from hdfs file system
 
@@ -16,7 +23,7 @@ Copy a file from hdfs to local
 
 ----
 
-write(fs, hdfsfile, str) -> byteswritten
+write(fs, hdfsfile, str) -> byteswritten 
 
 Write data into an open file
 
@@ -49,5 +56,11 @@ Close a hdfs file
 open(fs, path, mode) -> hdfs-file
 
 Open a hdfs file in given mode ("r" or "w")
+
+----
+
+delete(fs, path) -> None
+
+Delete a file (directory)
 
 ----
