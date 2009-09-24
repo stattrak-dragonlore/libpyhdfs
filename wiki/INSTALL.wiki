@@ -22,7 +22,7 @@
 
 -----
 
-You can run install.sh to do all the things above.
+You can run `install.sh' to do all the things above.
 
 
 ==Run test script==
