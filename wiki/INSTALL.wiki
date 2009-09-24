@@ -17,13 +17,7 @@
   
   $ cd ..
 
-  $ sudo python setup.py install
-
-
-==Setting CLASSPATH==
-
-   $ export CLASSPATH=/usr/local/lib/pyhdfs/hadoop-0.20.1-core.jar:/usr/local/lib/pyhdfs/commons-logging-1.0.4.jar:/etc/pyhdfs
-
+  $ sudo python setup.py install --prefix="/usr/local"
 
 
 -----
@@ -52,4 +46,8 @@ into    + 27 #include "linux/jni_md.h"
 see https://bugs.launchpad.net/ubuntu/+source/sun-java6/+bug/390290
 
 Debian has the same problem.
+
+----
+On Ubuntu 9.04 + python2.6, you need to add /usr/local/lib/python2.6/site-packages to sys.path, see https://bugs.launchpad.net/ubuntu/+source/python2.6/+bug/362570
+
    
