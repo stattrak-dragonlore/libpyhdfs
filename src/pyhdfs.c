@@ -331,6 +331,5 @@ initpyhdfs(void)
 		snprintf(new, sizeof(new), "%s:%s", CLASSPATH, old);
 		setenv("CLASSPATH", new, 1);
 	}
-	puts(getenv("CLASSPATH"));
 }
 
