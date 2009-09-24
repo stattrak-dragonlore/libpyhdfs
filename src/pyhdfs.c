@@ -299,6 +299,57 @@ hdfs_exists(PyObject *self, PyObject *args)
 }
 
 
+/**
+ * Rename a file (directory)
+ * @param fs The configured filesystem handle.
+ * @param oldPath The path of the source file. 
+ * @param newPath The path of the destination file. 
+ * @return Returns 0 on success, -1 on error. 
+ * int hdfsRename(hdfsFS fs, const char* oldPath, const char* newPath);
+ */
+static PyObject *
+hdfs_rename(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs;
+	const char *oldpath, *newpath;
+	
+	
+	if (!PyArg_ParseTuple(args, "Oss", &pyfs, &oldpath, &newpath))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	if (hdfsRename(fs, oldpath, newpath) == 0) 
+		Py_RETURN_TRUE;
+	else
+		Py_RETURN_FALSE;
+}
+
+
+/**
+ * Delete a file (directory)
+ * @param fs The configured filesystem handle.
+ * @param path The path of the file.
+ * @return Returns True on success, False else.
+ */
+static PyObject *
+hdfs_delete(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs;
+	const char *path;
+	
+	if (!PyArg_ParseTuple(args, "Os", &pyfs, &path))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	if (hdfsDelete(fs, path) == 0) 
+		Py_RETURN_TRUE;
+	else
+		Py_RETURN_FALSE;
+}
+
+
 static PyMethodDef HdfsMethods[] =
 {
 	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
@@ -307,10 +358,12 @@ static PyMethodDef HdfsMethods[] =
 	{"flush", hdfs_flush, METH_VARARGS, "flush(fs, hdfsfile) -> None \n\nFlush the data"},
 	{"close", hdfs_close, METH_VARARGS, "close(fs, hdfsfile) -> None \n\nClose a hdfs file"},
 	{"disconnect", hdfs_disconnect, METH_VARARGS, "disconnect(fs) -> None \n\nDisconnect from hdfs file system"},
-//	{"test", hdfs_test, METH_VARARGS, "Run connect, open, read, write, close, disconnect in one time"},
 	{"get", hdfs_get, METH_VARARGS, "get(fs, rpath, lpath) -> None \n\nCopy a file from hdfs to local"},
 	{"put", hdfs_put, METH_VARARGS, "put(fs, lpath, rpath) -> None \n\nCopy a file from local to hdfs"},
+	{"delete", hdfs_delete, METH_VARARGS, "delete(fs, path) -> None \n\nDelete a file (directory)"},
 	{"exists", hdfs_exists, METH_VARARGS, "exists(fs, path) -> True or False \n\nChecks if a given path exsits on the hdfs"},
+	{"rename", hdfs_rename, METH_VARARGS, "rename(fs, oldpath, newpath) -> None \n\nRename a file (direcory)"},
+//TODO	{"list", hdfs_list, METH_VARARGS, "list(fs, path[, longfmt]) -> list_of_strings(list_of_lists) \n\nlist a directory"},
 	{NULL, NULL, 0, NULL}
 };
 
