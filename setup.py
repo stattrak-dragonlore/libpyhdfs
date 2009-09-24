@@ -8,8 +8,9 @@ pyhdfs = Extension('pyhdfs',
                    runtime_library_dirs = ['/usr/local/lib/pyhdfs', '/usr/lib/jvm/java-6-sun/jre/lib/i386/server'],
                    )
 
-files = [('lib/pyhdfs', ['lib/hadoop-0.20.1-core.jar', 'lib/commons-logging-1.0.4.jar',
-                         'lib/libhdfs.so.0']),
+#do not change this!
+files = [('/usr/local/lib/pyhdfs', ['lib/hadoop-0.20.1-core.jar', 'lib/commons-logging-1.0.4.jar',
+                                    'lib/libhdfs.so.0']),
          ('/etc/pyhdfs', ['conf/hdfs-site.xml'])]
 
 setup(name = 'PyHdfs',

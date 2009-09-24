@@ -17,6 +17,8 @@
  */
 
 #include <Python.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "hdfs.h"
 
 
@@ -317,5 +319,18 @@ PyMODINIT_FUNC
 initpyhdfs(void)
 {
 	(void) Py_InitModule("pyhdfs", HdfsMethods);
+	
+	/* setting Java CLASSPATH */
+	const char *CLASSPATH="/usr/local/lib/pyhdfs/hadoop-0.20.1-core.jar:/usr/local/lib/pyhdfs/commons-logging-1.0.4.jar:/etc/pyhdfs";
+	char *old;
+	char new[1024];
+	
+	if ((old = getenv("CLASSPATH")) == NULL) {
+		setenv("CLASSPATH", CLASSPATH, 1);
+	} else if (strstr(old, CLASSPATH) == NULL) {
+		snprintf(new, sizeof(new), "%s:%s", CLASSPATH, old);
+		setenv("CLASSPATH", new, 1);
+	}
+	puts(getenv("CLASSPATH"));
 }
 

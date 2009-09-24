@@ -17,7 +17,7 @@
   $ ln -s libhdfs.so.0 libhdfs.so
   
   $ cd ..
-  # python setup.py install
+  # python setup.py install --prefix="/usr/local"
 
   If you see the following error:
 /usr/lib/jvm/java-6-sun/include/jni.h:27:20: error: jni_md.h: No such file or directory
@@ -28,9 +28,6 @@ into    + 27 #include "linux/jni_md.h"
 
 ses https://bugs.launchpad.net/ubuntu/+source/sun-java6/+bug/390290
 Debian has the same problem.
-
-** Setting CLASSPATH:
-   $ export CLASSPATH=/usr/local/lib/pyhdfs/hadoop-0.20.1-core.jar:/usr/local/lib/pyhdfs/commons-logging-1.0.4.jar:/etc/pyhdfs
 
 
 ** Run test script
