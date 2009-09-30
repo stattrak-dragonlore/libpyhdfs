@@ -22,6 +22,7 @@
 #include "hdfs.h"
 
 
+
 /**
  * Connect to the hdfs file system.
  * @param host A string containing either a host name, or an ip address
@@ -100,6 +101,51 @@ hdfs_open(PyObject *self, PyObject *args)
 		return NULL;
         }
 	return PyLong_FromVoidPtr(file);
+}
+
+
+/**
+ * Read data from an open file
+ * @param fs The configured filesystem handle.
+ * @param file The file handle.
+ * @param size read at most size bytes .
+ * @return Returns the number of bytes read, NULL on error.
+ */
+static PyObject *
+hdfs_read(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	PyObject *pyfile;
+	hdfsFS fs;
+	hdfsFile file;
+	void *buf;
+	int size = 2 * 1024 * 1024;
+	PyObject *res = NULL;
+
+	
+	if (!PyArg_ParseTuple(args, "OO|i", &pyfs, &pyfile, &size))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
+	
+	
+	if (size > 2 * 1024 * 1024 || size <= 0)
+		size = 2 * 1024 * 1024;
+			
+	buf = PyMem_Malloc(size);
+	if (buf == NULL) 
+		return PyErr_NoMemory();
+	
+	size_t bytesread = hdfsRead(fs, file, buf, size);
+	if (bytesread == -1) {
+		PyErr_SetString(PyExc_IOError, "Failed to write data to file");
+	} else {
+		res = Py_BuildValue("s#", buf, bytesread);
+	}
+	
+	PyMem_Free(buf); 
+	return res;
 }
 
 
@@ -353,8 +399,9 @@ hdfs_delete(PyObject *self, PyObject *args)
 static PyMethodDef HdfsMethods[] =
 {
 	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
-	{"open", hdfs_open, METH_VARARGS, "open(fs, path, mode) -> hdfs-file \n\nOpen a hdfs file in given mode (\"r\" or \"w\")"},
+	{"open", hdfs_open, METH_VARARGS, "open(fs, path, mode[, bufsize[, replication[, blksiz]]] ) -> hdfs-file \n\nOpen a hdfs file in given mode (\"r\" or \"w\")"},
 	{"write", hdfs_write, METH_VARARGS, "write(fs, hdfsfile, str) -> byteswritten \n\nWrite data into an open file"},
+	{"read", hdfs_read, METH_VARARGS, "read(fs, hdfsfile[, size]) -> read at most min(2M, size) bytes, returned as a string \n\nIf the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reached, empty string will be returned"},
 	{"flush", hdfs_flush, METH_VARARGS, "flush(fs, hdfsfile) -> None \n\nFlush the data"},
 	{"close", hdfs_close, METH_VARARGS, "close(fs, hdfsfile) -> None \n\nClose a hdfs file"},
 	{"disconnect", hdfs_disconnect, METH_VARARGS, "disconnect(fs) -> None \n\nDisconnect from hdfs file system"},

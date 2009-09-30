@@ -9,16 +9,17 @@ def main():
     fs = pyhdfs.connect(host, port)
     
     try:
-        print "opening"
+        print "opening /test/foo for writing"
         f = pyhdfs.open(fs, "/test/foo", "w")
     
         print "writing"
-        pyhdfs.write(fs, f, "hoho\0haha\nxixi")
-    
+        written = pyhdfs.write(fs, f, "hoho\0haha\nxixi")
+        print "written %d bytes" % (written)
+        
         print "flushing"
         pyhdfs.flush(fs, f)
     
-        print "closing"
+        print "closing file"
         pyhdfs.close(fs, f)
     
         print "checking existence"
@@ -28,6 +29,21 @@ def main():
 	    
 	print "putting"
 	pyhdfs.put(fs, "pyhdfs_test.py", "/test")
+        
+        print "opening /test/foo for reading"
+        f = pyhdfs.open(fs, "/test/foo", "r")
+        
+        print "reading first 5 bytes"
+        s = pyhdfs.read(fs, f, 5)
+        print s, len(s)
+        
+        print "reading remaining"
+        s = pyhdfs.read(fs, f)
+        print s, len(s)
+        
+        print "closing file"
+        pyhdfs.close(fs, f)
+        
     finally:
         print "disconnecting"
         pyhdfs.disconnect(fs)
