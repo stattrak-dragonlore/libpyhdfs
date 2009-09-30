@@ -34,9 +34,9 @@ static PyObject *
 hdfs_connect(PyObject *self, PyObject *args)
 {
 	const char *host;
-	int port;
+	tPort port;
 	
-	if (!PyArg_ParseTuple(args, "si", &host, &port))
+	if (!PyArg_ParseTuple(args, "sH", &host, &port))
 		return NULL;
 	
 	hdfsFS fs = hdfsConnect(host, port);
@@ -71,11 +71,11 @@ hdfs_open(PyObject *self, PyObject *args)
 	const char *path;
 	const char *mode;
 	int bufsiz = 0;
-	int rep = 0;
-	int blksiz = 0;
+	short rep = 0;
+	tSize blksiz = 0;
 	int flags = O_RDONLY;
 
-	if (!PyArg_ParseTuple(args, "Oss|iii", &pyfs, &path, &mode, &bufsiz, &rep, &blksiz))
+	if (!PyArg_ParseTuple(args, "Oss|ihi", &pyfs, &path, &mode, &bufsiz, &rep, &blksiz))
 		return NULL;
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
@@ -119,7 +119,7 @@ hdfs_read(PyObject *self, PyObject *args)
 	hdfsFS fs;
 	hdfsFile file;
 	void *buf;
-	int size = 2 * 1024 * 1024;
+	int size;
 	PyObject *res = NULL;
 
 	
@@ -137,9 +137,48 @@ hdfs_read(PyObject *self, PyObject *args)
 	if (buf == NULL) 
 		return PyErr_NoMemory();
 	
-	size_t bytesread = hdfsRead(fs, file, buf, size);
+	tSize bytesread = hdfsRead(fs, file, buf, size);
 	if (bytesread == -1) {
-		PyErr_SetString(PyExc_IOError, "Failed to write data to file");
+		PyErr_SetString(PyExc_IOError, "Failed to read data from file");
+	} else {
+		res = Py_BuildValue("s#", buf, bytesread);
+	}
+	
+	PyMem_Free(buf); 
+	return res;
+}
+
+
+static PyObject *
+hdfs_pread(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	PyObject *pyfile;
+	hdfsFS fs;
+	hdfsFile file;
+	void *buf;
+	tOffset offset;
+	int size;
+	PyObject *res = NULL;
+
+	
+	if (!PyArg_ParseTuple(args, "OOL|i", &pyfs, &pyfile, &offset, &size))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
+	
+	
+	if (size > 2 * 1024 * 1024 || size <= 0)
+		size = 2 * 1024 * 1024;
+			
+	buf = PyMem_Malloc(size);
+	if (buf == NULL) 
+		return PyErr_NoMemory();
+	
+	tSize bytesread = hdfsPread(fs, file, offset, buf, size);
+	if (bytesread == -1) {
+		PyErr_SetString(PyExc_IOError, "Failed to read data from file");
 	} else {
 		res = Py_BuildValue("s#", buf, bytesread);
 	}
@@ -173,7 +212,7 @@ hdfs_write(PyObject *self, PyObject *args)
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
 	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
 	
-	size_t written = hdfsWrite(fs, file, (void *)buf, siz);
+	tSize written = hdfsWrite(fs, file, (void *)buf, siz);
 	
 	if (written == -1) {
 		PyErr_SetString(PyExc_IOError, "Failed to write data to file");
@@ -202,6 +241,55 @@ hdfs_flush(PyObject *self, PyObject *args)
 		Py_RETURN_NONE;
 	} else {
 		PyErr_SetString(PyExc_IOError, "Failed to close file");
+		return NULL;
+	}
+}
+
+
+static PyObject *
+hdfs_seek(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	PyObject *pyfile;
+	hdfsFS fs;
+	hdfsFile file;
+	tOffset offset;
+	
+	if (!PyArg_ParseTuple(args, "OOL", &pyfs, &pyfile, &offset))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
+	
+	if (hdfsSeek(fs, file, offset) != -1) {
+		Py_RETURN_NONE;
+	} else {
+		PyErr_SetString(PyExc_IOError, "Failed to seek");
+		return NULL;
+	}
+}
+
+
+static PyObject *
+hdfs_tell(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	PyObject *pyfile;
+	hdfsFS fs;
+	hdfsFile file;
+	
+	if (!PyArg_ParseTuple(args, "OO", &pyfs, &pyfile))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
+	
+	tOffset offset = hdfsTell(fs, file);
+	
+	if (offset != -1) {
+		return Py_BuildValue("L", offset);
+	} else {
+		PyErr_SetString(PyExc_IOError, "Failed to tell");
 		return NULL;
 	}
 }
@@ -401,8 +489,11 @@ static PyMethodDef HdfsMethods[] =
 	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
 	{"open", hdfs_open, METH_VARARGS, "open(fs, path, mode[, bufsize[, replication[, blksiz]]] ) -> hdfs-file \n\nOpen a hdfs file in given mode (\"r\" or \"w\")"},
 	{"write", hdfs_write, METH_VARARGS, "write(fs, hdfsfile, str) -> byteswritten \n\nWrite data into an open file"},
-	{"read", hdfs_read, METH_VARARGS, "read(fs, hdfsfile[, size]) -> read at most min(2M, size) bytes, returned as a string \n\nIf the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reached, empty string will be returned"},
 	{"flush", hdfs_flush, METH_VARARGS, "flush(fs, hdfsfile) -> None \n\nFlush the data"},
+	{"read", hdfs_read, METH_VARARGS, "read(fs, hdfsfile[, size]) -> read at most min(2M, size) bytes, returned as a string \n\nIf the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reached, empty string will be returned"},
+	{"pread", hdfs_pread, METH_VARARGS, "pread(fs, hdfsfile, offset[, size]) -> similar to read, read data from given position"},
+	{"seek", hdfs_seek, METH_VARARGS, "seek(fs, hdfsfile, offset) -> None \n\nSeek to given offset in open file in read-only mode"},
+	{"tell", hdfs_tell, METH_VARARGS, "tell(fs, hdfsfile) -> int \n\nGet the current offset in the file, in bytes."},
 	{"close", hdfs_close, METH_VARARGS, "close(fs, hdfsfile) -> None \n\nClose a hdfs file"},
 	{"disconnect", hdfs_disconnect, METH_VARARGS, "disconnect(fs) -> None \n\nDisconnect from hdfs file system"},
 	{"get", hdfs_get, METH_VARARGS, "get(fs, rpath, lpath) -> None \n\nCopy a file from hdfs to local"},
