@@ -41,6 +41,23 @@ def main():
         s = pyhdfs.read(fs, f)
         print s, len(s)
         
+        print "telling"
+        print pyhdfs.tell(fs, f)
+        
+        print "reading"
+        s = pyhdfs.read(fs, f)
+        print s, len(s)
+        
+        print "position reading from 5"
+        s = pyhdfs.pread(fs, f, 5)
+        print s, len(s)
+        
+        print "seeking"
+        pyhdfs.seek(fs, f, 1)
+        
+        print "telling"
+        print pyhdfs.tell(fs, f)
+        
         print "closing file"
         pyhdfs.close(fs, f)
         
