@@ -1,7 +1,10 @@
-
-rename(fs, oldpath, newpath) -> None                                                                                                                                  
+rename(fs, oldpath, newpath) -> None                                         
 
 Rename a file (direcory)
+
+----
+
+pread(fs, hdfsfile, offset[, size]) -> similar to read, read data from given position
 
 ----
 
@@ -23,13 +26,25 @@ Copy a file from hdfs to local
 
 ----
 
+read(fs, hdfsfile[, size]) -> read at most min(2M, size) bytes, returned as a string 
+
+If the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reached, empty string will be returned
+
+----
+
+seek(fs, hdfsfile, offset) -> None 
+
+Seek to given offset in open file in read-only mode
+
+----
+
 write(fs, hdfsfile, str) -> byteswritten 
 
 Write data into an open file
 
 ----
 
-put(fs, lpath, rpath) -> None
+put(fs, lpath, rpath) -> None 
 
 Copy a file from local to hdfs
 
@@ -53,7 +68,13 @@ Close a hdfs file
 
 ----
 
-open(fs, path, mode) -> hdfs-file
+tell(fs, hdfsfile) -> int
+
+Get the current offset in the file, in bytes.
+
+----
+
+open(fs, path, mode[, bufsize[, replication[, blksiz]]] ) -> hdfs-file
 
 Open a hdfs file in given mode ("r" or "w")
 
