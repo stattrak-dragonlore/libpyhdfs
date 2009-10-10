@@ -69,13 +69,13 @@ hdfs_open(PyObject *self, PyObject *args)
 	PyObject *pyfs;
 	hdfsFS fs;
 	const char *path;
-	const char *mode;
+	const char *mode = "r";
 	int bufsiz = 0;
 	short rep = 0;
 	tSize blksiz = 0;
 	int flags = O_RDONLY;
 
-	if (!PyArg_ParseTuple(args, "Oss|ihi", &pyfs, &path, &mode, &bufsiz, &rep, &blksiz))
+	if (!PyArg_ParseTuple(args, "Os|sihi", &pyfs, &path, &mode, &bufsiz, &rep, &blksiz))
 		return NULL;
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
@@ -487,7 +487,7 @@ hdfs_delete(PyObject *self, PyObject *args)
 static PyMethodDef HdfsMethods[] =
 {
 	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
-	{"open", hdfs_open, METH_VARARGS, "open(fs, path, mode[, bufsize[, replication[, blksiz]]] ) -> hdfs-file \n\nOpen a hdfs file in given mode (\"r\" or \"w\")"},
+	{"open", hdfs_open, METH_VARARGS, "open(fs, path[, mode[, bufsize[, replication[, blksiz]]]]) -> hdfs-file \n\nOpen a hdfs file in given mode (\"r\" or \"w\"), default is read-only"},
 	{"write", hdfs_write, METH_VARARGS, "write(fs, hdfsfile, str) -> byteswritten \n\nWrite data into an open file"},
 	{"flush", hdfs_flush, METH_VARARGS, "flush(fs, hdfsfile) -> None \n\nFlush the data"},
 	{"read", hdfs_read, METH_VARARGS, "read(fs, hdfsfile[, size]) -> read at most min(2M, size) bytes, returned as a string \n\nIf the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reached, empty string will be returned"},
