@@ -334,10 +334,9 @@ hdfs_disconnect(PyObject *self, PyObject *args)
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
 	if (hdfsDisconnect(fs) != -1) {
-		Py_RETURN_NONE;
+		Py_RETURN_TRUE;
 	} else {
-		PyErr_SetString(PyExc_SystemError, "Failed to disconncect from hdfs");
-		return NULL;
+		Py_RETURN_FALSE;
 	}
 }
 
@@ -495,7 +494,7 @@ static PyMethodDef HdfsMethods[] =
 	{"seek", hdfs_seek, METH_VARARGS, "seek(fs, hdfsfile, offset) -> None \n\nSeek to given offset in open file in read-only mode"},
 	{"tell", hdfs_tell, METH_VARARGS, "tell(fs, hdfsfile) -> int \n\nGet the current offset in the file, in bytes."},
 	{"close", hdfs_close, METH_VARARGS, "close(fs, hdfsfile) -> None \n\nClose a hdfs file"},
-	{"disconnect", hdfs_disconnect, METH_VARARGS, "disconnect(fs) -> None \n\nDisconnect from hdfs file system"},
+	{"disconnect", hdfs_disconnect, METH_VARARGS, "disconnect(fs) -> Bool \n\nDisconnect from hdfs file system"},
 	{"get", hdfs_get, METH_VARARGS, "get(fs, rpath, lpath) -> None \n\nCopy a file from hdfs to local"},
 	{"put", hdfs_put, METH_VARARGS, "put(fs, lpath, rpath) -> None \n\nCopy a file from local to hdfs"},
 	{"delete", hdfs_delete, METH_VARARGS, "delete(fs, path) -> None \n\nDelete a file (directory)"},
