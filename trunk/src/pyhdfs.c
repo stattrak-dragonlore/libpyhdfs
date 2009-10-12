@@ -262,10 +262,9 @@ hdfs_seek(PyObject *self, PyObject *args)
 	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
 	
 	if (hdfsSeek(fs, file, offset) != -1) {
-		Py_RETURN_NONE;
+		Py_RETURN_TRUE;
 	} else {
-		PyErr_SetString(PyExc_IOError, "Failed to seek");
-		return NULL;
+		Py_RETURN_FALSE;
 	}
 }
 
@@ -289,8 +288,7 @@ hdfs_tell(PyObject *self, PyObject *args)
 	if (offset != -1) {
 		return Py_BuildValue("L", offset);
 	} else {
-		PyErr_SetString(PyExc_IOError, "Failed to tell");
-		return NULL;
+		return Py_BuildValue("L", -1);
 	}
 }
 
@@ -310,10 +308,9 @@ hdfs_close(PyObject *self, PyObject *args)
 	file = (hdfsFile)PyLong_AsVoidPtr(pyfile);
 	
 	if (hdfsCloseFile(fs, file) != -1) {
-		Py_RETURN_NONE;
+		Py_RETURN_TRUE;
 	} else {
-		PyErr_SetString(PyExc_IOError, "Failed to close file");
-		return NULL;
+		Py_RETURN_FALSE;
 	}
 }
 
@@ -491,10 +488,10 @@ static PyMethodDef HdfsMethods[] =
 	{"flush", hdfs_flush, METH_VARARGS, "flush(fs, hdfsfile) -> None \n\nFlush the data"},
 	{"read", hdfs_read, METH_VARARGS, "read(fs, hdfsfile[, size]) -> read at most min(2M, size) bytes, returned as a string \n\nIf the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reached, empty string will be returned"},
 	{"pread", hdfs_pread, METH_VARARGS, "pread(fs, hdfsfile, offset[, size]) -> similar to read, read data from given position"},
-	{"seek", hdfs_seek, METH_VARARGS, "seek(fs, hdfsfile, offset) -> None \n\nSeek to given offset in open file in read-only mode"},
-	{"tell", hdfs_tell, METH_VARARGS, "tell(fs, hdfsfile) -> int \n\nGet the current offset in the file, in bytes."},
-	{"close", hdfs_close, METH_VARARGS, "close(fs, hdfsfile) -> None \n\nClose a hdfs file"},
-	{"disconnect", hdfs_disconnect, METH_VARARGS, "disconnect(fs) -> Bool \n\nDisconnect from hdfs file system"},
+	{"seek", hdfs_seek, METH_VARARGS, "seek(fs, hdfsfile, offset) -> True or False \n\nSeek to given offset in open file in read-only mode"},
+	{"tell", hdfs_tell, METH_VARARGS, "tell(fs, hdfsfile) -> int \n\nGet the current offset in the file, in bytes. -1 is returned on error"},
+	{"close", hdfs_close, METH_VARARGS, "close(fs, hdfsfile) -> True or False \n\nClose a hdfs file"},
+	{"disconnect", hdfs_disconnect, METH_VARARGS, "disconnect(fs) -> True or False \n\nDisconnect from hdfs file system"},
 	{"get", hdfs_get, METH_VARARGS, "get(fs, rpath, lpath) -> None \n\nCopy a file from hdfs to local"},
 	{"put", hdfs_put, METH_VARARGS, "put(fs, lpath, rpath) -> None \n\nCopy a file from local to hdfs"},
 	{"delete", hdfs_delete, METH_VARARGS, "delete(fs, path) -> None \n\nDelete a file (directory)"},
