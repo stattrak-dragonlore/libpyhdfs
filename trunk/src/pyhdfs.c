@@ -480,6 +480,32 @@ hdfs_delete(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+hdfs_stat(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs;
+	const char *path;
+	
+	if (!PyArg_ParseTuple(args, "Os", &pyfs, &path))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	hdfsFileInfo *fileinfo = hdfsGetPathInfo(fs, path);
+	
+	if (fileinfo != NULL) {
+		PyObject *res = Py_BuildValue("cLLL", fileinfo->mKind,
+					      fileinfo->mSize,
+					      (int64_t)fileinfo->mLastMod,
+					      (int64_t)fileinfo->mLastAccess);
+		hdfsFreeFileInfo(fileinfo, 1);
+		return res;
+	} else {
+		Py_RETURN_NONE;
+	}
+}
+
+
 static PyMethodDef HdfsMethods[] =
 {
 	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
@@ -497,6 +523,9 @@ static PyMethodDef HdfsMethods[] =
 	{"delete", hdfs_delete, METH_VARARGS, "delete(fs, path) -> None \n\nDelete a file (directory)"},
 	{"exists", hdfs_exists, METH_VARARGS, "exists(fs, path) -> True or False \n\nChecks if a given path exsits on the hdfs"},
 	{"rename", hdfs_rename, METH_VARARGS, "rename(fs, oldpath, newpath) -> None \n\nRename a file (direcory)"},
+	{"stat", hdfs_stat, METH_VARARGS, "stat(fs, path) -> fileinfo(type, size, lastmodify, lastaccess) \n\n Get information about a path"},
+//TODO	{"mkdir", hdfs_mkdir, METH_VARARGS, "mkdir(fs, path) -> True or False \n\n Make the given path and all non-existent parents into directories"},
+//TODO	{"utime", hdfs_utime, METH_VARARGS, ""},
 //TODO	{"list", hdfs_list, METH_VARARGS, "list(fs, path[, longfmt]) -> list_of_strings(list_of_lists) \n\nlist a directory"},
 	{NULL, NULL, 0, NULL}
 };
