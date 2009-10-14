@@ -8,7 +8,7 @@ pread(fs, hdfsfile, offset[, size]) -> similar to read, read data from given pos
 
 ----
 
-disconnect(fs) -> None 
+disconnect(fs) -> True or False 
 
 Disconnect from hdfs file system
 
@@ -32,9 +32,15 @@ If the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reach
 
 ----
 
-seek(fs, hdfsfile, offset) -> None 
+seek(fs, hdfsfile, offset) -> True or False 
 
 Seek to given offset in open file in read-only mode
+
+----
+
+stat(fs, path) -> fileinfo(type, size, lastmodify, lastaccess) 
+
+ Get information about a path
 
 ----
 
@@ -62,7 +68,7 @@ Flush the data
 
 ----
 
-close(fs, hdfsfile) -> None
+close(fs, hdfsfile) -> True or False
 
 Close a hdfs file
 
@@ -70,13 +76,13 @@ Close a hdfs file
 
 tell(fs, hdfsfile) -> int
 
-Get the current offset in the file, in bytes.
+Get the current offset in the file, in bytes. -1 is returned on error
 
 ----
 
-open(fs, path, mode[, bufsize[, replication[, blksiz]]] ) -> hdfs-file
+open(fs, path[, mode[, bufsize[, replication[, blksiz]]]]) -> hdfs-file
 
-Open a hdfs file in given mode ("r" or "w")
+Open a hdfs file in given mode ("r" or "w"), default is read-only
 
 ----
 
