@@ -4,31 +4,31 @@ Rename a file (direcory)
 
 ----
 
-pread(fs, hdfsfile, offset[, size]) -> similar to read, read data from given position
-
-----
-
-disconnect(fs) -> True or False 
-
-Disconnect from hdfs file system
-
-----
-
 exists(fs, path) -> True or False 
 
 Checks if a given path exsits on the hdfs
 
 ----
 
-get(fs, rpath, lpath) -> None 
+connect(host, port) -> fs 
 
-Copy a file from hdfs to local
+Connect to a hdfs file system
 
 ----
 
-read(fs, hdfsfile[, size]) -> read at most min(2M, size) bytes, returned as a string 
+flush(fs, hdfsfile) -> None 
 
-If the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reached, empty string will be returned
+Flush the data
+
+----
+
+close(fs, hdfsfile) -> True or False 
+
+Close a hdfs file
+
+----
+
+pread(fs, hdfsfile, offset[, size]) -> similar to read, read data from given position
 
 ----
 
@@ -38,9 +38,21 @@ Seek to given offset in open file in read-only mode
 
 ----
 
-stat(fs, path) -> fileinfo(type, size, lastmodify, lastaccess) 
+disconnect(fs) -> True or False 
 
- Get information about a path
+Disconnect from hdfs file system
+
+----
+
+open(fs, path[, mode[, bufsize[, replication[, blksiz]]]]) -> hdfs-file 
+
+Open a hdfs file in given mode ("r" or "w"), default is read-only
+
+----
+
+mkdir(fs, path) -> True or False 
+
+ Make the given path and all non-existent parents into directories
 
 ----
 
@@ -50,39 +62,39 @@ Write data into an open file
 
 ----
 
-put(fs, lpath, rpath) -> None 
-
-Copy a file from local to hdfs
-
-----
-
-connect(host, port) -> fs
-
-Connect to a hdfs file system
-
-----
-
-flush(fs, hdfsfile) -> None
-
-Flush the data
-
-----
-
-close(fs, hdfsfile) -> True or False
-
-Close a hdfs file
-
-----
-
-tell(fs, hdfsfile) -> int
+tell(fs, hdfsfile) -> int 
 
 Get the current offset in the file, in bytes. -1 is returned on error
 
 ----
 
-open(fs, path[, mode[, bufsize[, replication[, blksiz]]]]) -> hdfs-file
+stat(fs, path) -> fileinfo(type, size, lastmodify, lastaccess)
 
-Open a hdfs file in given mode ("r" or "w"), default is read-only
+ Get information about a path
+
+----
+
+get(fs, rpath, lpath) -> None
+
+Copy a file from hdfs to local
+
+----
+
+read(fs, hdfsfile[, size]) -> read at most min(2M, size) bytes, returned as a string
+
+If the size argument is <=0 or omitted, read at most 2M bytes. When EOF is reached, empty string will be returned
+
+----
+
+put(fs, lpath, rpath) -> None
+
+Copy a file from local to hdfs
+
+----
+
+utime(fs, path, modtime, actime) -> True or False
+
+Change file last access and modification times
 
 ----
 
