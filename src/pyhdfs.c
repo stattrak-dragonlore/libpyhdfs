@@ -17,10 +17,29 @@
  */
 
 #include <Python.h>
+#include <sys/resource.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "hdfs.h"
 
+#define NO_JAVA_EXCEPTION_OUTPUT 1
+
+FILE *
+disable_stderr(void)
+{
+	if (NO_JAVA_EXCEPTION_OUTPUT) {
+		return freopen("/dev/null", "w", stderr);
+	}
+}
+
+
+FILE *
+renable_stderr(void)
+{
+	if (NO_JAVA_EXCEPTION_OUTPUT) {
+		return freopen("/dev/tty", "w", stderr);
+	}
+}
 
 
 /**
@@ -422,7 +441,7 @@ hdfs_exists(PyObject *self, PyObject *args)
 		return NULL;
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
-	if (hdfsExists(fs, path) == 0) 
+	if (hdfsExists(fs, path) != -1) 
 		Py_RETURN_TRUE;
 	else
 		Py_RETURN_FALSE;
@@ -449,7 +468,7 @@ hdfs_rename(PyObject *self, PyObject *args)
 		return NULL;
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
-	if (hdfsRename(fs, oldpath, newpath) == 0) 
+	if (hdfsRename(fs, oldpath, newpath) != -1)
 		Py_RETURN_TRUE;
 	else
 		Py_RETURN_FALSE;
@@ -473,7 +492,7 @@ hdfs_delete(PyObject *self, PyObject *args)
 		return NULL;
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
-	if (hdfsDelete(fs, path) == 0) 
+	if (hdfsDelete(fs, path) != -1) 
 		Py_RETURN_TRUE;
 	else
 		Py_RETURN_FALSE;
@@ -506,6 +525,50 @@ hdfs_stat(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+hdfs_mkdir(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs;
+	const char *path;
+	
+	if (!PyArg_ParseTuple(args, "Os", &pyfs, &path))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+
+	disable_stderr();
+	if (hdfsCreateDirectory(fs, path) != -1) {
+		renable_stderr();
+		Py_RETURN_TRUE;
+	} else {
+		renable_stderr();
+		Py_RETURN_FALSE;
+	}
+}
+
+
+static PyObject *
+hdfs_utime(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs;
+	const char *path;
+	int64_t mtime, atime;
+	
+	if (!PyArg_ParseTuple(args, "OsLL", &pyfs, &path, &mtime, &atime))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	
+	if (hdfsUtime(fs, path, mtime, atime) != -1) {
+		Py_RETURN_TRUE;
+	} else {
+		Py_RETURN_FALSE;
+	}
+}
+
+
 static PyMethodDef HdfsMethods[] =
 {
 	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
@@ -524,8 +587,8 @@ static PyMethodDef HdfsMethods[] =
 	{"exists", hdfs_exists, METH_VARARGS, "exists(fs, path) -> True or False \n\nChecks if a given path exsits on the hdfs"},
 	{"rename", hdfs_rename, METH_VARARGS, "rename(fs, oldpath, newpath) -> None \n\nRename a file (direcory)"},
 	{"stat", hdfs_stat, METH_VARARGS, "stat(fs, path) -> fileinfo(type, size, lastmodify, lastaccess) \n\n Get information about a path"},
-//TODO	{"mkdir", hdfs_mkdir, METH_VARARGS, "mkdir(fs, path) -> True or False \n\n Make the given path and all non-existent parents into directories"},
-//TODO	{"utime", hdfs_utime, METH_VARARGS, ""},
+	{"mkdir", hdfs_mkdir, METH_VARARGS, "mkdir(fs, path) -> True or False \n\n Make the given path and all non-existent parents into directories"},
+	{"utime", hdfs_utime, METH_VARARGS, "utime(fs, path, modtime, actime) -> True or False \n\nChange file last access and modification times"},
 //TODO	{"list", hdfs_list, METH_VARARGS, "list(fs, path[, longfmt]) -> list_of_strings(list_of_lists) \n\nlist a directory"},
 	{NULL, NULL, 0, NULL}
 };
@@ -547,5 +610,9 @@ initpyhdfs(void)
 		snprintf(new, sizeof(new), "%s:%s", CLASSPATH, old);
 		setenv("CLASSPATH", new, 1);
 	}
+	
+	/* no core dump file */
+	struct rlimit rlp;
+	rlp.rlim_cur = 0;
+	setrlimit(RLIMIT_CORE, &rlp);
 }
-
