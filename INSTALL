@@ -19,8 +19,18 @@
    # apt-get install libhdfs0-dev
    
 ** install libpyhdfs 
-   $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs   
-   # python setup.py install --prefix="/usr/local"
+
+   - check out the source: 
+      $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs   
+
+   - prepare the libhdfs.so
+      You can copy your libhdfs.so into `lib' directory.
+   or 
+      Edit setup.py: make `library_dirs' point to the correct place.
+      7                    library_dirs = ['lib'],
+
+   - install
+      # python setup.py install --prefix="/usr/local"
    
 
   If you see the following error:
