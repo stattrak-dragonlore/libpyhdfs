@@ -9,7 +9,7 @@
    
    
 ** install libpyhdfs 
-  $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs
+  $ svn co http://libpyhdfs.googlecode.com/svn/branches/bundle/ libpyhdfs
   $ cd libpyhdfs/lib
   $ wget http://libpyhdfs.googlecode.com/files/commons-logging-1.0.4.jar
   $ wget http://libpyhdfs.googlecode.com/files/hadoop-0.20.1-core.jar
