@@ -1,57 +1,5 @@
-==install Java SDK 6==
-   $ `sudo apt-get install sun-java6-jdk`
-   
- 
-==install libpyhdfs==
-  $ `svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs`
+see http://code.google.com/p/libpyhdfs/source/browse/trunk/INSTALL
+or http://code.google.com/p/libpyhdfs/source/browse/branches/bundle/INSTALL
 
-  $ `cd libpyhdfs/lib`
-
-  $ `wget http://libpyhdfs.googlecode.com/files/commons-logging-1.0.4.jar`
-
-  $ `wget http://libpyhdfs.googlecode.com/files/hadoop-0.20.1-core.jar`
-
-  $ `wget http://libpyhdfs.googlecode.com/files/libhdfs.so.0`
-
-  $ `ln -s libhdfs.so.0 libhdfs.so`
-  
-  $ `cd ..`
-
-  $ `sudo python setup.py install --prefix="/usr/local"`
-
-
------
-
-You can run `install.sh' to do all the things above.
-
-
-==Run test script==
-   $ `cd test`
-
-   $ `python pyhdfs_test.py`
-
-
-----
-
-If you see the following error:
-
-/usr/lib/jvm/java-6-sun/include/jni.h:27:20: error: jni_md.h: No such file or directory
-
-Edit /usr/lib/jvm/java-6-sun/include/jni.h
-
-change  - 27 *#include "jni_md.h"*
-
-into    + 27 *#include "linux/jni_md.h"*
-
-see https://bugs.launchpad.net/ubuntu/+source/sun-java6/+bug/390290
-
-Debian has the same problem.
-
-----
-On Ubuntu 9.04 + python2.6, you need to add `/usr/local/lib/python2.6/site-packages` to sys.path,  
-
-or run: `python setup.py install` without prefix option.
-
-see https://bugs.launchpad.net/ubuntu/+source/python2.6/+bug/362570
 
    
