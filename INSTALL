@@ -7,17 +7,21 @@
 ** install Java SDK 6
    # apt-get install sun-java6-jdk
    
+
+** install Hadoop's libhdfs development package
+
+   For easy to install packaes, follow instructions at
+
+   http://archive.cloudera.com/docs/
+
+   and then run
+
+   # apt-get install libhdfs0-dev
    
 ** install libpyhdfs 
-  $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs
-  $ cd libpyhdfs/lib
-  $ wget http://libpyhdfs.googlecode.com/files/commons-logging-1.0.4.jar
-  $ wget http://libpyhdfs.googlecode.com/files/hadoop-0.20.1-core.jar
-  $ wget http://libpyhdfs.googlecode.com/files/libhdfs.so.0
-  $ ln -s libhdfs.so.0 libhdfs.so
-  
-  $ cd ..
-  # python setup.py install --prefix="/usr/local"
+   $ svn co http://libpyhdfs.googlecode.com/svn/trunk/ libpyhdfs   
+   # python setup.py install --prefix="/usr/local"
+   
 
   If you see the following error:
 /usr/lib/jvm/java-6-sun/include/jni.h:27:20: error: jni_md.h: No such file or directory
@@ -34,9 +38,4 @@ Debian has the same problem.
    $ cd test
    $ python pyhdfs_test.py
    
-
- notes
- -----
- 
- `install.sh' does all the steps above.
 
