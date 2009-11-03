@@ -61,6 +61,12 @@ def main():
         print "closing file"
         pyhdfs.close(fs, f)
         
+        print "listing directory"
+        l = pyhdfs.listdir(fs, "/test")
+        for i in l:
+            print i
+        
+        
     finally:
         print "disconnecting"
         pyhdfs.disconnect(fs)

@@ -569,6 +569,52 @@ hdfs_utime(PyObject *self, PyObject *args)
 }
 
 
+/**
+ * Get list of files/directories for a given path.
+ * hdfsFreeFileInfo should be called to deallocate memory.
+ * @param fs The configured filesystem handle.
+ * @param path The path of the directory.
+ * @return Returns a dynamically-allocated list of hdfsFileInfo
+ * objects; NULL on error.
+ */
+static PyObject *
+hdfs_listdir(PyObject *self, PyObject *args)
+{
+  	PyObject *pyfs;
+	hdfsFS fs;
+	const char *path;
+	hdfsFileInfo *entries;
+	int i;
+	int num_entries;
+
+	if (!PyArg_ParseTuple(args, "Os", &pyfs, &path))
+		return NULL;
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	if (!(entries = hdfsListDirectory(fs, path, &num_entries))) {
+		Py_RETURN_NONE;
+	} else {
+		PyObject *py_entries = PyList_New(num_entries);
+		for (i = 0; i < num_entries; i++) {
+			PyObject *fields = Py_BuildValue(
+				"{s:c,s:s,s:L,s:L,s:h,s:L,s:s,s:s,s:h,s:L}",
+				"kind", entries[i].mKind,
+				"name", entries[i].mName,
+				"last_mod", (int64_t)entries[i].mLastMod,
+				"size", entries[i].mSize,
+				"replication", entries[i].mReplication,
+				"block_size", entries[i].mBlockSize,
+				"owner", entries[i].mOwner,
+				"group", entries[i].mGroup,
+				"permissions", entries[i].mPermissions,
+				"last_access", (int64_t)entries[i].mLastAccess);
+			PyList_SetItem(py_entries, i, fields);
+		}
+		hdfsFreeFileInfo(entries, num_entries);
+		return py_entries;
+	}
+}
+
+
 static PyMethodDef HdfsMethods[] =
 {
 	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
@@ -589,7 +635,7 @@ static PyMethodDef HdfsMethods[] =
 	{"stat", hdfs_stat, METH_VARARGS, "stat(fs, path) -> fileinfo(type, size, lastmodify, lastaccess) \n\n Get information about a path"},
 	{"mkdir", hdfs_mkdir, METH_VARARGS, "mkdir(fs, path) -> True or False \n\n Make the given path and all non-existent parents into directories"},
 	{"utime", hdfs_utime, METH_VARARGS, "utime(fs, path, modtime, actime) -> True or False \n\nChange file last access and modification times"},
-//TODO	{"list", hdfs_list, METH_VARARGS, "list(fs, path[, longfmt]) -> list_of_strings(list_of_lists) \n\nlist a directory"},
+	{"listdir", hdfs_listdir, METH_VARARGS, "listdir(fs, path) -> [stats] \n\nGet list of files/directories of a given directory-path. Returns a list of dict object containing {kind, name, last_mod, size, replication, block_size, owner, group, permissions, last_access}"},	
 	{NULL, NULL, 0, NULL}
 };
 
