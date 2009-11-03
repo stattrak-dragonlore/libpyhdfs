@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import time
 import pyhdfs
 
 host = "192.168.23.204"
@@ -60,7 +61,26 @@ def main():
         
         print "closing file"
         pyhdfs.close(fs, f)
+
+        print "updating file time"
+        pyhdfs.utime(fs, "/test/foo", int(time.time()), int(time.time()))        
         
+        print "stating file"
+        print pyhdfs.stat(fs, "/test/foo")
+        
+	print "stating nosuchfile"
+	print pyhdfs.stat(fs, "/test/nosuchfile")
+
+	print "stating dir"
+	print pyhdfs.stat(fs, "/test")
+
+	print "mkdir dir /test/foo"
+	print pyhdfs.mkdir(fs, "/test/foo")
+
+	print "mkdir dir /test/dir/foo"
+	print pyhdfs.mkdir(fs, "/test/dir/foo")
+	print pyhdfs.stat(fs, "/test/dir/foo")
+
         print "listing directory"
         l = pyhdfs.listdir(fs, "/test")
         for i in l:
