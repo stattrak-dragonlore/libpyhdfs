@@ -589,9 +589,12 @@ hdfs_listdir(PyObject *self, PyObject *args)
 
 	if (!PyArg_ParseTuple(args, "Os", &pyfs, &path))
 		return NULL;
+	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
-	if (!(entries = hdfsListDirectory(fs, path, &num_entries))) {
-		Py_RETURN_NONE;
+	
+	entries = hdfsListDirectory(fs, path, &num_entries);
+	if (!entries && errno) {
+		return PyErr_SetFromErrno(PyExc_IOError);
 	} else {
 		PyObject *py_entries = PyList_New(num_entries);
 		for (i = 0; i < num_entries; i++) {
