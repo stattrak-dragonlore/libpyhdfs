@@ -2,8 +2,8 @@
 import time
 import pyhdfs
 
-host = "192.168.23.204"
-port = 9000
+host = "default"
+port = 0
 
 def main():
     print "connecting"
