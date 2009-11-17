@@ -86,6 +86,14 @@ def main():
         for i in l:
             print i
         
+        print "current working directory"
+        print pyhdfs.getcwd(fs)
+        
+        print "changing to root directory"
+        print pyhdfs.chdir(fs, '/')
+        
+        print "current working directory"
+        print pyhdfs.getcwd(fs)    
         
     finally:
         print "disconnecting"

@@ -42,6 +42,17 @@ renable_stderr(void)
 }
 
 
+const char *
+getfilepath(const char *url)
+{
+	/* hdfs://host:port/file/path */
+	if (strncmp("hdfs://", url, 7) == 0)
+		return strchr(url + 7, '/');
+	else
+		return url;
+}
+
+
 /**
  * Connect to the hdfs file system.
  * @param host A string containing either a host name, or an ip address
@@ -618,6 +629,65 @@ hdfs_listdir(PyObject *self, PyObject *args)
 }
 
 
+/**
+ * Return a string representing the current working directory.
+ * None on error
+ */
+static PyObject *
+hdfs_getcwd(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs;
+	void *buf;
+	int size = 512;
+	PyObject *res = NULL;
+	
+	if (!PyArg_ParseTuple(args, "O", &pyfs))
+		return NULL;
+	
+	buf = PyMem_Malloc(size);
+	if (buf == NULL) 
+		return PyErr_NoMemory();
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	if (hdfsGetWorkingDirectory(fs, buf, size) != NULL) {
+		res = Py_BuildValue("s", getfilepath(buf));
+		PyMem_Free(buf); 
+		return res;
+	} else {
+		PyMem_Free(buf); 		
+		Py_RETURN_NONE;
+	}
+}
+
+
+/**
+ * Change the current working directory to the specified path.
+ * The `path' may not exist.
+ */
+static PyObject *
+hdfs_chdir(PyObject *self, PyObject *args)
+{
+	PyObject *pyfs;
+	hdfsFS fs;
+	const char *path;
+
+	if (!PyArg_ParseTuple(args, "Os", &pyfs, &path))
+		return NULL;
+	
+	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
+	
+	disable_stderr();
+	if (hdfsSetWorkingDirectory(fs, path) != -1) {
+		renable_stderr();
+		Py_RETURN_TRUE;
+	} else {
+		renable_stderr();		
+		Py_RETURN_FALSE;
+	}
+}
+
+
 static PyMethodDef HdfsMethods[] =
 {
 	{"connect", hdfs_connect, METH_VARARGS, "connect(host, port) -> fs \n\nConnect to a hdfs file system"},
@@ -638,7 +708,9 @@ static PyMethodDef HdfsMethods[] =
 	{"stat", hdfs_stat, METH_VARARGS, "stat(fs, path) -> fileinfo(type, size, lastmodify, lastaccess) \n\n Get information about a path"},
 	{"mkdir", hdfs_mkdir, METH_VARARGS, "mkdir(fs, path) -> True or False \n\n Make the given path and all non-existent parents into directories"},
 	{"utime", hdfs_utime, METH_VARARGS, "utime(fs, path, modtime, actime) -> True or False \n\nChange file last access and modification times"},
-	{"listdir", hdfs_listdir, METH_VARARGS, "listdir(fs, path) -> [stats] \n\nGet list of files/directories of a given directory-path. Returns a list of dict object containing {kind, name, last_mod, size, replication, block_size, owner, group, permissions, last_access}"},	
+	{"listdir", hdfs_listdir, METH_VARARGS, "listdir(fs, path) -> [stats] \n\nGet list of files/directories of a given directory-path. Returns a list of dict object containing {kind, name, last_mod, size, replication, block_size, owner, group, permissions, last_access}"},
+	{"getcwd", hdfs_getcwd, METH_VARARGS, "getcwd(fs) -> path \n\nReturn a string representing the current working directory."},
+	{"chdir", hdfs_chdir, METH_VARARGS, "chdir(fs, path) -> True or False \n\nSet the working directory. The `path' can be a non-exist directory. All relative paths will be resolved relative to it."},
 	{NULL, NULL, 0, NULL}
 };
 
