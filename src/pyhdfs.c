@@ -20,6 +20,7 @@
 #include <sys/resource.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stddef.h>
 #include "hdfs.h"
 
 #define NO_JAVA_EXCEPTION_OUTPUT 1
@@ -42,14 +43,108 @@ renable_stderr(void)
 }
 
 
-const char *
-getfilepath(const char *url)
+/**
+ * hdfs://hostname:port/path/foo/bar
+ *           keep this ~~~~~~~~~~~~~
+ */
+char *remove_host_prefix(char *path) 
 {
-	/* hdfs://host:port/file/path */
-	if (strncmp("hdfs://", url, 7) == 0)
-		return strchr(url + 7, '/');
-	else
-		return url;
+	if (strncmp(path, "hdfs://", 7) == 0) {
+		char *start = rawmemchr(path + 7, '/');
+		char *end = rawmemchr(path, '\0');
+		memmove(path, start, end - start + 1);
+	}
+	return path;
+}
+
+
+/* Return the canonical absolute name of file NAME.  A canonical name
+   does not contain any `.', `..' components nor any repeated path
+   separators ('/').  All path components must exist. The result is
+   malloc'd; */
+char *hdfs_realpath(hdfsFS fs, const char *name)
+{
+	char *rpath, *dest;
+	const char *start, *end, *rpath_limit;
+	long int path_max;
+
+	if (name == NULL || name[0] == '\0') {
+		return NULL;
+	}
+
+	path_max = 1024;
+
+	rpath = malloc(path_max);
+	if (rpath == NULL)
+		return NULL;
+	rpath_limit = rpath + path_max;
+
+	if (name[0] != '/') {
+		if (!hdfsGetWorkingDirectory(fs, rpath, path_max)) {
+			rpath[0] = '\0';
+			goto error;
+		}
+		remove_host_prefix(rpath);
+		dest = rawmemchr(rpath, '\0');
+	} else {
+		rpath[0] = '/';
+		dest = rpath + 1;
+	}
+
+	for (start = end = name; *start; start = end) {
+		/* Skip sequence of multiple path-separators.  */
+		while (*start == '/')
+			++start;
+
+		/* Find end of path component.  */
+		for (end = start; *end && *end != '/'; ++end)
+			/* Nothing.  */;
+
+		if (end - start == 0)
+			break;
+		else if (end - start == 1 && start[0] == '.')
+			/* nothing */;
+		else if (end - start == 2 && start[0] == '.' && start[1] == '.') {
+			/* Back up to previous component, ignore if at root already.  */
+			if (dest > rpath + 1)
+				while ((--dest)[-1] != '/');
+		} else {
+			size_t new_size;
+
+			if (dest[-1] != '/')
+				*dest++ = '/';
+
+			if (dest + (end - start) >= rpath_limit) {
+				ptrdiff_t dest_offset = dest - rpath;
+				char *new_rpath;
+
+				new_size = rpath_limit - rpath;
+				if (end - start + 1 > path_max)
+					new_size += end - start + 1;
+				else
+					new_size += path_max;
+				new_rpath = (char *)realloc(rpath, new_size);
+				if (new_rpath == NULL)
+					goto error;
+				rpath = new_rpath;
+				rpath_limit = rpath + new_size;
+
+				dest = rpath + dest_offset;
+			}
+				  
+			dest = mempcpy(dest, start, end - start);
+			*dest = '\0';
+		}
+	}
+	if (dest > rpath + 1 && dest[-1] == '/')
+		--dest;
+	*dest = '\0';
+
+	return rpath;
+
+error:
+	free(rpath);
+	return NULL;
 }
 
 
@@ -594,6 +689,7 @@ hdfs_listdir(PyObject *self, PyObject *args)
   	PyObject *pyfs;
 	hdfsFS fs;
 	const char *path;
+	char *realpath;
 	hdfsFileInfo *entries;
 	int i;
 	int num_entries;
@@ -603,16 +699,28 @@ hdfs_listdir(PyObject *self, PyObject *args)
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
 	
-	entries = hdfsListDirectory(fs, path, &num_entries);
+	realpath = hdfs_realpath(fs, path);
+	if (!realpath) {
+		Py_RETURN_NONE;
+	}
+	
+	entries = hdfsListDirectory(fs, realpath, &num_entries);
 	if (!entries && errno) {
+		free(realpath);
 		return PyErr_SetFromErrno(PyExc_IOError);
 	} else {
 		PyObject *py_entries = PyList_New(num_entries);
 		for (i = 0; i < num_entries; i++) {
+			/* hdfs://host:port/path/name 
+			   we just keep this     ~~~~~ */
+			const char *name = remove_host_prefix(entries[i].mName) + strlen(realpath);
+			if (strcmp(realpath, "/"))
+				name++;			
+			
 			PyObject *fields = Py_BuildValue(
 				"{s:c,s:s,s:L,s:L,s:h,s:L,s:s,s:s,s:h,s:L}",
 				"kind", entries[i].mKind,
-				"name", entries[i].mName,
+				"name", name,
 				"last_mod", (int64_t)entries[i].mLastMod,
 				"size", entries[i].mSize,
 				"replication", entries[i].mReplication,
@@ -624,6 +732,7 @@ hdfs_listdir(PyObject *self, PyObject *args)
 			PyList_SetItem(py_entries, i, fields);
 		}
 		hdfsFreeFileInfo(entries, num_entries);
+		free(realpath);
 		return py_entries;
 	}
 }
@@ -651,7 +760,7 @@ hdfs_getcwd(PyObject *self, PyObject *args)
 	
 	fs = (hdfsFS)PyLong_AsVoidPtr(pyfs);
 	if (hdfsGetWorkingDirectory(fs, buf, size) != NULL) {
-		res = Py_BuildValue("s", getfilepath(buf));
+		res = Py_BuildValue("s", remove_host_prefix(buf));
 		PyMem_Free(buf); 
 		return res;
 	} else {
